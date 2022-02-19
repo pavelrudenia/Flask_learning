@@ -1,0 +1,25 @@
+{% extends 'base.html'%}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% block title%}
+    <title>Регистрация</title>
+    {% endblock %}
+</head>
+<body>
+    {% block body %}
+    {{ super() }}
+    <h1>Авторизация</h1>
+    <form action="/login" method="post" class="form-contact">
+        <p><label>Имя: </label><input type="text" name="username" value="" required></p>
+        <p><label>Пароль: </label><input type="password" name="pass" value="" required></p>
+        <p><input type="submit" value="Войти"></p>
+
+    </form>
+    {%endblock%}
+</body>
+</html>

@@ -1,0 +1,21 @@
+{% extends 'base.html'%}
+
+{% block title%}
+<title>Главная страница</title>
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+<h2>Cписок статей</h2>
+
+<ul class="list-posts">
+  {% for p in posts %}
+  <li>
+    <p class="title"><a href="{{url_for ('ShowPost',alias=p.url)}}">{{p.title}}</a></p>
+    <p class="anonce">{{ p.text[:100] |striptags +"..."}}</p>
+  </li>
+  {% endfor %}
+</ul>
+
+
+{% endblock%}
