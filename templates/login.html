@@ -1,25 +1,33 @@
-{% extends 'base.html'%}
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    {% block title%}
-    <title>Регистрация</title>
-    {% endblock %}
-</head>
-<body>
-    {% block body %}
-    {{ super() }}
-    <h1>Авторизация</h1>
-    <form action="/login" method="post" class="form-contact">
-        <p><label>Имя: </label><input type="text" name="username" value="" required></p>
-        <p><label>Пароль: </label><input type="password" name="pass" value="" required></p>
-        <p><input type="submit" value="Войти"></p>
+{% extends 'base.html' %}
+{% block title%}
+<title>Авторизация</title>
+{% endblock %}
+{% block body %}
+{{ super() }}
+{% for cat, msg in get_flashed_messages(True) %}
+<div class="flash {{cat}}">{{msg}}</div>
+{% endfor %}
+<h1>Авторизация</h1>
+<form action="" method="post" class="form-contact">
+    {{form.hidden_tag()}}
 
-    </form>
-    {%endblock%}
-</body>
-</html>
+    {% for field in form if field.name not in ['csrf_token', 'remember', 'submit'] -%}
+	<p>{{ field.label() }}
+	{% if field.errors %}
+		{{ field(class="invalid") }}
+	<label class="invalid-feedback">
+		{% for e in field.errors %}
+		{{ e }}
+		{% endfor %}
+	</label>
+	{% else %}
+		{{ field() }}
+	{% endif %}
+{% endfor %}
+
+    <p>{{ form.remember.label() }} {{form.remember()}}
+    <p>{{form.submit() }}
+<hr align=left width="300px">
+<p><a href="{{url_for('register')}}">Регистрация</a>
+</form>
+{% endblock %}

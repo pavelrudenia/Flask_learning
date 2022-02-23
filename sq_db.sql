@@ -13,3 +13,12 @@ url text NOT NULL,
 time integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS users (
+id integer PRIMARY KEY AUTOINCREMENT,
+name text NOT NULL unique,
+email text NOT NULL,
+psw text NOT NULL,
+time integer NOT NULL,
+avatar BLOB DEFAULT NULL
+);
+
