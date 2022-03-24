@@ -2,11 +2,11 @@ from flask import Flask, render_template, request, flash, session, url_for, redi
 import sqlite3
 import os
 from FDataBase import FDataBase
-from werkzeug.security import generate_password_hash,check_password_hash
-from flask_login import LoginManager,login_user,login_required,current_user,logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from UserLogin import UserLogin
 from forms import LoginForm, RegisterForm
-from admin.admin import  admin
+from admin.admin import admin
 
 # конфигурация бд
 DATABASE = '/tmp/flsite.db'
@@ -18,23 +18,23 @@ app.config['SECRET_KEY'] = 'FHSGGSDBGDRUIDNGHDYHFDGJKFDJHBF'
 app.config.from_object(__name__)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'flsite.db')))
 
-
 login_manager = LoginManager(app)
 """если пользователь не имеет доступ к странице сайта,его перекидывает на авторизацию"""
-login_manager.login_view='login'
-login_manager.login_message="Aвторизуйтесь для доступа к закрытым страницам"
-login_manager.login_message_category='success'
+login_manager.login_view = 'login'
+login_manager.login_message = "Aвторизуйтесь для доступа к закрытым страницам"
+login_manager.login_message_category = 'success'
 
-#максимальный размер файла который можно загрузить на сервер(1мБ)
+# максимальный размер файла который можно загрузить на сервер(1мБ)
 MAX_CONTENT_LENGHT = 1024 * 1024
 
-#регистрация blueprint
-app.register_blueprint(admin,url_prefix='/admin')
+# регистрация blueprint
+app.register_blueprint(admin, url_prefix='/admin')
+
 
 @login_manager.user_loader
 def load_user(user_id):
     print('load user')
-    return UserLogin().fromDB(user_id,dbase)
+    return UserLogin().fromDB(user_id, dbase)
 
 
 def connect_db():
@@ -46,52 +46,41 @@ def connect_db():
 
 def create_db():
     db = connect_db()
-    with app.open_resource('sq_db.sql',mode='r') as f:
+    with app.open_resource('sq_db.sql', mode='r') as f:
         db.cursor().executescript(f.read())
     db.commit()
     db.close()
 
 
 def get_db():
-    #установка соединения
-    if not hasattr(g,'link_db'):
+    # установка соединения
+    if not hasattr(g, 'link_db'):
         g.link_db = connect_db()
     return g.link_db
 
 
 @app.teardown_appcontext
 def close_db(error):
-    #разрыв соединения
-    if hasattr(g,'link_db'):
+    # разрыв соединения
+    if hasattr(g, 'link_db'):
         g.link_db.close()
 
 
-dbase=None
+dbase = None
+
+
 @app.before_request
 def before_request():
     """Устанавливаем соединение с БД перед выполнением запроса"""
     global dbase
-    db=get_db()
-    dbase=FDataBase(db)
+    db = get_db()
+    dbase = FDataBase(db)
 
 
 @app.route("/")
+@login_required
 def index():
-    return render_template('index.html',menu = dbase.getMenu(),posts=dbase.getPostsAnonce())
-
-
-
-
-@app.route("/contact", methods=["POST", "GET"])
-def contact():
-
-    if request.method == "POST":
-        if len(request.form['username']) > 2:
-            flash("Cообщение отправлено", category="success")
-        else:
-            flash("Ошибка отправки", category="error")
-
-    return render_template('contact.html', menu=dbase.getMenu())
+    return render_template('index.html', menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -99,20 +88,19 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
 
-    form =LoginForm()
-    #если данные были отправлены и введены корректно
+    form = LoginForm()
+    # если данные были отправлены и введены корректно
     if form.validate_on_submit():
         user = dbase.getUserByName(form.name.data)
         if user and check_password_hash(user['psw'], form.psw.data):
             userlogin = UserLogin().create(user)
-            rm=form.remember.data
-            login_user(userlogin,remember=rm)
+            rm = form.remember.data
+            login_user(userlogin, remember=rm)
             return redirect(request.args.get("next") or url_for("profile"))
 
         flash("Неверная пара логин/пароль", "error")
 
-    return render_template("login.html",menu=dbase.getMenu(),form=form)
-
+    return render_template("login.html", menu=dbase.getMenu(), form=form)
 
 
 @app.route("/register", methods=["POST", "GET"])
@@ -135,8 +123,9 @@ def register():
 @login_required
 def logout():
     logout_user()
-    flash("Вы вышли из аккаунта","success")
+    flash("Вы вышли из аккаунта", "success")
     return redirect(url_for('login'))
+
 
 @app.route('/profile')
 @login_required
@@ -155,26 +144,43 @@ def useravatar():
     h.headers['Content-Type'] = 'image/png'
     return h
 
+
 @app.errorhandler(404)
 def pageNotFound(error):
-
     return render_template('page404.html', menu=dbase.getMenu())
 
 
-@app.route("/add_post",methods=['POST','GET'])
+@app.route("/add_post", methods=['POST', 'GET'])
+@login_required
 def addPost():
-
-
     if request.method == "POST":
-        if len(request.form['name']) >4 and len(request.form['post']) >10:
-            res = dbase.addPost(request.form['name'],request.form['post'],request.form['url'])
+        if len(request.form['name']) > 4 and len(request.form['post']) > 10 and len(
+                request.form['language']) > 2 and len(request.form['url']) > 2:
+
+            res = dbase.addPost(request.form['name'], request.form['post'], request.form['url'],
+                                request.form['language'])
             if not res:
-                flash("Ошибка добавления статьи",category='error')
+                flash("Ошибка добавления статьи", category='error')
             else:
                 flash('Cтатья добавлена успешно', category="success")
         else:
-            flash("Ошибка добавления статьи",category='error')
-    return render_template('add_post.html',menu =dbase.getMenu())
+            flash("Ошибка добавления статьи2", category='error')
+    return render_template('add_post.html', menu=dbase.getMenu(), category=dbase.getCategory())
+
+
+@app.route("/add_category", methods=['POST', 'GET'])
+@login_required
+def addCategory():
+    if request.method == "POST":
+        if len(request.form['name']) > 3:
+            res = dbase.addCategory(request.form['name'])
+            if not res:
+                flash("Ошибка добавления категории", category='error')
+            else:
+                flash('Категория добавлена успешно', category="success")
+        else:
+            flash("Ошибка добавления категории", category='error')
+    return render_template('add_category.html', menu=dbase.getMenu(), )
 
 
 @app.route('/upload', methods=["POST", "GET"])
@@ -200,11 +206,11 @@ def upload():
 @app.route("/post/<alias>")
 @login_required
 def ShowPost(alias):
-
-    title,post = dbase.getPost(alias)
+    title, post = dbase.getPost(alias)
     if not title:
         abort(404)
-    return render_template('post.html', menu=dbase.getMenu(),title = title,post=post)
+    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

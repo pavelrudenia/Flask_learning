@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block title%}
-<title>Авторизация</title>
+<title>	&#128400;Авторизация	&#128400;</title>
 {% endblock %}
 {% block body %}
 {{ super() }}
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
-<h1>Авторизация</h1>
+<h1>	&#128400;Авторизация	&#128400;</h1>
 <form action="" method="post" class="form-contact">
     {{form.hidden_tag()}}
 

@@ -22,7 +22,36 @@ class FDataBase:
             print("Ошибка чтения из бд")
         return []
 
-    def addPost(self, title, text,url):
+
+    def getCategory(self):
+        sql = """Select * from Category"""
+        try:
+            self.__cur.execute(sql)
+            res = self.__cur.fetchall()
+            if res: return res
+        except:
+            print("Ошибка чтения из бд")
+        return []
+
+
+    def addCategory(self, category):
+        try:
+            self.__cur.execute(f"SELECT COUNT() AS 'count' from Category where category LIKE'{category}'")
+            res = self.__cur.fetchone()
+            if res['count'] > 0:
+                print("Такая категория  уже существует")
+                return False
+            print("aaa")
+            self.__cur.execute("INSERT INTO Category VALUES(?)", (category,))
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("Ошибка добавления категории в БД " + str(e))
+            return False
+
+        return True
+
+
+    def addPost(self, title, text,url,category):
         try:
             self.__cur.execute(f"SELECT COUNT() AS 'count' from posts where url LIKE'{url}'")
             res = self.__cur.fetchone()
@@ -35,7 +64,7 @@ class FDataBase:
                           text)
 
             tm = datetime.datetime.now()
-            self.__cur.execute("INSERT INTO posts VALUES(NULL, ?, ?, ?,?)", (title, text, url,tm))
+            self.__cur.execute("INSERT INTO posts VALUES(NULL, ?, ?, ?,?,?)", (title, category, text,url,tm))
             self.__db.commit()
         except sqlite3.Error as e:
             print("Ошибка добавления статьи в БД " + str(e))
@@ -59,7 +88,7 @@ class FDataBase:
 
     def getPostsAnonce(self):
         try:
-            self.__cur.execute(f"SELECT id, title, text,url FROM posts Order by time desc")
+            self.__cur.execute(f"SELECT id, title, text,url FROM posts Order by time asc")
             res = self.__cur.fetchall()
             if res:
                 return res

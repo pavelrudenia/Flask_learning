@@ -1,21 +1,52 @@
 {% extends 'base.html' %}
 
 {% block title%}
-<title>Добавление статьи</title>
+<title>&#129534;Добавление статьи&#129534;</title>
 {% endblock %}
 
 {% block body %}
 {{ super() }}
-<h1>Добавление статьи</h1>
+<h1>&#129534;Добавление статьи&#129534;</h1>
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
-<form  action="{{ url_for('addPost') }}" method="post" class="form-contact">
+
+
+<form name="myForm" action="{{ url_for('addPost') }}" method="post" class="form-contact">
     <p><label>Название статьи:</label><input type="text" name="name" value="" required></p>
     <p><label>URL статьи:</label><input type="text" name="url" value="" required></p>
+
+    <label>Выберите категорию:</label>
+     <select name="language" id="months" >
+         {%for cat in category %}
+            <option>{{cat.category}}</option>
+         {% endfor %}
+         </select>
+         <br>
+<label id="sel">Вы выбрали:</label>
+<a id="info" name="category"></a>
+<br>
     <label>Текст статьи:</label>
-    <p><textarea name="post"  cols="40" rows="7"></textarea></p>
-    <p><input type="submit" value="Добавить"></p>
+<p><textarea name="post"  cols="40" rows="7"></textarea></p>
+    <p><input type="submit"  value="Добавить"></p>
+
 </form>
+
+
+
+
+<script>
+var languagesSelect = myForm.language;
+
+function changeOption(){
+
+    var selection = document.getElementById("info");
+    var selectedOption = languagesSelect.options[languagesSelect.selectedIndex];
+    selection.textContent =  selectedOption.text;
+}
+
+languagesSelect.addEventListener("change", changeOption);
+</script>
+
 
 {% endblock%}
