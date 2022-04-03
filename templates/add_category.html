@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title%}
+<title>	&#128172;Добавление категории	&#128172;</title>
+{% endblock %}
+
+{% block body %}
+{{ super() }}
+<h1>	&#128172;Добавление статьи	&#128172;</h1>
+{% for cat, msg in get_flashed_messages(True) %}
+<div class="flash {{cat}}">{{msg}}</div>
+{% endfor %}
+<form  name="myForm" action="{{ url_for('addCategory') }}" method="post" class="form-contact">
+    <p><label>Название категории:</label><input type="text" name="name" value="" required></p>
+    <p><input type="submit" class="btn btn-danger" value="Добавить"></p>
+</form>
+
+
+
+
+
+
+
+
+
+{% endblock%}
