@@ -30,6 +30,13 @@ MAX_CONTENT_LENGHT = 1024 * 1024
 # регистрация blueprint
 app.register_blueprint(admin, url_prefix='/admin')
 
+menu = [{'url': '/', 'title': 'Главная'},
+        {'url': '/add_post', 'title': 'Добавить заметку'},
+        {'url': '/add_category', 'title': 'Добавить категорию'},
+        {'url': '/login', 'title': 'Авторизация'},
+        {'url': '/register', 'title': 'Регистрация'},
+        {'url': '/admin', 'title': 'Админ-панель'}]
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -80,7 +87,7 @@ def before_request():
 @app.route("/")
 @login_required
 def index():
-    return render_template('index.html', menu=dbase.getMenu(), posts=dbase.getPostsAnonce())
+    return render_template('index.html', menu=menu, posts=dbase.getPostsAnonce())
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -100,7 +107,7 @@ def login():
 
         flash("Неверная пара логин/пароль", "error")
 
-    return render_template("login.html", menu=dbase.getMenu(), form=form)
+    return render_template("login.html", menu=menu, form=form)
 
 
 @app.route("/register", methods=["POST", "GET"])
@@ -115,7 +122,7 @@ def register():
         else:
             flash("Ошибка при добавлении в БД", "error")
 
-    return render_template("register.html", menu=dbase.getMenu(), form=form)
+    return render_template("register.html", menu=menu, form=form)
 
 
 @app.route('/logout')
@@ -129,15 +136,12 @@ def logout():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', menu=dbase.getMenu())
-
-
-
+    return render_template('profile.html', menu=menu, )
 
 
 @app.errorhandler(404)
 def pageNotFound(error):
-    return render_template('page404.html', menu=dbase.getMenu())
+    return render_template('page404.html', menu=menu, )
 
 
 @app.route("/add_post", methods=['POST', 'GET'])
@@ -146,16 +150,16 @@ def addPost():
     if request.method == "POST":
         if len(request.form['name']) > 4 and len(request.form['post']) > 10 and len(
                 request.form['language']) > 2 and len(request.form['url']) > 2:
-            author =current_user.getName()
+            author = current_user.getName()
             res = dbase.addPost(request.form['name'], request.form['post'], request.form['url'],
-                                    request.form['language'],author)
+                                request.form['language'], author)
             if not res:
                 flash("Ошибка добавления статьи", category='error')
             else:
                 flash('Cтатья добавлена успешно', category="success")
         else:
             flash("Ошибка добавления статьи2", category='error')
-    return render_template('add_post.html', menu=dbase.getMenu(), category=dbase.getCategory())
+    return render_template('add_post.html', menu=menu, category=dbase.getCategory())
 
 
 @app.route("/add_category", methods=['POST', 'GET'])
@@ -170,7 +174,7 @@ def addCategory():
                 flash('Категория добавлена успешно', category="success")
         else:
             flash("Ошибка добавления категории", category='error')
-    return render_template('add_category.html', menu=dbase.getMenu(), )
+    return render_template('add_category.html', menu=menu)
 
 
 @app.route('/useravatar')
@@ -208,10 +212,11 @@ def upload():
 @app.route("/post/<alias>")
 @login_required
 def ShowPost(alias):
-    title, post,time,id = dbase.getPost(alias)
+    title, post, time, id = dbase.getPost(alias)
     if not post:
         abort(404)
-    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post,time =time,id=id)
+    return render_template('post.html', menu=menu, title=title, post=post, time=time, id=id)
+
 
 @app.route("/post/<id>/delete")
 def DeletePost(id):
@@ -223,7 +228,8 @@ def DeletePost(id):
     except Exception as e:
         flash("Что-то пошло не так", "error")
 
-    return render_template('delete_note.html', menu=dbase.getMenu())
+    return render_template('delete_note.html', menu=menu)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
