@@ -1,15 +1,15 @@
 import sqlite3
 
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, g
+from flask_login import login_required
+from FDataBase import FDataBase
 
-admin = Blueprint('admin',__name__,template_folder='templates',static_folder='static')
-
+admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
 
 menu = [{'url': '.index', 'title': 'Панель'},
         {'url': '.listusers', 'title': 'Список пользователей'},
         {'url': '.listpubs', 'title': 'Список статей'},
         {'url': '.logout', 'title': 'Выйти'}]
-
 
 db = None
 
@@ -18,7 +18,7 @@ db = None
 def before_request():
     """Установление соединения с БД перед выполнением запроса"""
     global db
-    #g контекст приложения
+    # g контекст приложения
     db = g.get('link_db')
 
 
@@ -41,6 +41,7 @@ def logout_admin():
     session.pop('admin_logged', None)
 
 
+@login_required
 @admin.route('/')
 def index():
     if not isLogged():
@@ -63,6 +64,7 @@ def login():
     return render_template('admin/login.html', title='Админ-панель')
 
 
+@login_required
 @admin.route('/logout', methods=["POST", "GET"])
 def logout():
     if not isLogged():
@@ -71,6 +73,7 @@ def logout():
     return redirect(url_for('.login'))
 
 
+@login_required
 @admin.route('/list-pubs')
 def listpubs():
     if not isLogged():
@@ -80,14 +83,16 @@ def listpubs():
     if db:
         try:
             cur = db.cursor()
-            cur.execute(f"SELECT title, text, url FROM posts")
+            cur.execute(f"SELECT title, text,author,time, url FROM posts")
             list = cur.fetchall()
+            print(list)
         except sqlite3.Error as e:
             print("Ошибка получения статей из БД " + str(e))
 
-    return render_template('admin/listpubs.html', title='Список статей', menu=menu, list=list)
+    return render_template('admin/listpubs.html', title='Список статей', menu=menu, list=list, )
 
 
+@login_required
 @admin.route('/list-users')
 def listusers():
     if not isLogged():
@@ -104,4 +109,20 @@ def listusers():
 
     return render_template('admin/listusers.html', title='Список пользователей', menu=menu, list=list)
 
+
+@admin.route("/<author>/delete")
+def DeleteUser(author):
+    if db:
+        try:
+            cur = db.cursor()
+            author_a  =author.replace("<","")
+            author_b = author_a.replace(">", "")
+            print(author_b)
+            cur.execute(f"Delete from users where name ='{author_b}'")
+            db.commit()
+
+        except sqlite3.Error as e:
+            print("Ошибка удаления пользователей  из БД " + str(e))
+
+    return render_template('admin/deleteuser.html',title="Пользователь удален &#10060")
 

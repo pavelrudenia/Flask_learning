@@ -107,7 +107,6 @@ def login():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-
         hash = generate_password_hash(form.psw.data)
         res = dbase.addUser(form.name.data, form.email.data, hash)
         if res:
@@ -133,16 +132,7 @@ def profile():
     return render_template('profile.html', menu=dbase.getMenu())
 
 
-@app.route('/useravatar')
-@login_required
-def useravatar():
-    img = current_user.getAvatar(app)
-    if not img:
-        return ""
 
-    h = make_response(img)
-    h.headers['Content-Type'] = 'image/png'
-    return h
 
 
 @app.errorhandler(404)
@@ -156,9 +146,9 @@ def addPost():
     if request.method == "POST":
         if len(request.form['name']) > 4 and len(request.form['post']) > 10 and len(
                 request.form['language']) > 2 and len(request.form['url']) > 2:
-
+            author =current_user.getName()
             res = dbase.addPost(request.form['name'], request.form['post'], request.form['url'],
-                                request.form['language'])
+                                    request.form['language'],author)
             if not res:
                 flash("Ошибка добавления статьи", category='error')
             else:
@@ -181,6 +171,18 @@ def addCategory():
         else:
             flash("Ошибка добавления категории", category='error')
     return render_template('add_category.html', menu=dbase.getMenu(), )
+
+
+@app.route('/useravatar')
+@login_required
+def useravatar():
+    img = current_user.getAvatar(app)
+    if not img:
+        return ""
+
+    h = make_response(img)
+    h.headers['Content-Type'] = 'image/png'
+    return h
 
 
 @app.route('/upload', methods=["POST", "GET"])
@@ -206,11 +208,22 @@ def upload():
 @app.route("/post/<alias>")
 @login_required
 def ShowPost(alias):
-    title, post = dbase.getPost(alias)
-    if not title:
+    title, post,time,id = dbase.getPost(alias)
+    if not post:
         abort(404)
-    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post)
+    return render_template('post.html', menu=dbase.getMenu(), title=title, post=post,time =time,id=id)
 
+@app.route("/post/<id>/delete")
+def DeletePost(id):
+    try:
+        res = dbase.DeletePost(id)
+        if not res:
+            pass
+
+    except Exception as e:
+        flash("Что-то пошло не так", "error")
+
+    return render_template('delete_note.html', menu=dbase.getMenu())
 
 if __name__ == "__main__":
     app.run(debug=True)

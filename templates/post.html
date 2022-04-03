@@ -10,9 +10,13 @@
 <h1 align="center">{{title}}</h1>
 
     <div class="alert alert-info">
-<p>{{post |safe}}</p>
+<p >{{post |safe}}</p>
+<p  align="right">{{time[:19] |safe}}</p>
+</div>
 
+       <a href="/post/{{id}}/delete" class="btn btn-danger">Удалить</a>
+<!--        <a href="" class="btn btn-success">Редактировать</a>-->
 </div>
-</div>
+
 
 {% endblock%}

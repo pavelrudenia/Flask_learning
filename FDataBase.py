@@ -3,6 +3,7 @@ import math
 import time
 import sqlite3
 import re
+from flask_login import current_user
 
 from flask import url_for
 
@@ -51,7 +52,7 @@ class FDataBase:
         return True
 
 
-    def addPost(self, title, text,url,category):
+    def addPost(self, title, text,url,category,author):
         try:
             self.__cur.execute(f"SELECT COUNT() AS 'count' from posts where url LIKE'{url}'")
             res = self.__cur.fetchone()
@@ -64,7 +65,7 @@ class FDataBase:
                           text)
 
             tm = datetime.datetime.now()
-            self.__cur.execute("INSERT INTO posts VALUES(NULL, ?, ?, ?,?,?)", (title, category, text,url,tm))
+            self.__cur.execute("INSERT INTO posts VALUES(NULL, ?, ?, ?,?,?,?)", (title, category, text,url,tm,author))
             self.__db.commit()
         except sqlite3.Error as e:
             print("Ошибка добавления статьи в БД " + str(e))
@@ -74,21 +75,33 @@ class FDataBase:
 
     def getPost(self, alias):
         try:
-            self.__cur.execute(f"SELECT title, text FROM posts WHERE url Like '{alias}' LIMIT 1")
+            self.__cur.execute(f"SELECT title,text,time,id FROM posts WHERE url Like '{alias}' LIMIT 1")
             res = self.__cur.fetchone()
             if res:
-
-
-
                 return res
         except sqlite3.Error as e:
             print("Ошибка получения статьи из БД " + str(e))
         return (False, False)
 
 
+    def DeletePost(self, id):
+        try:
+            self.__cur.execute(f"SELECT id AS 'count' from posts where id ='{id}'")
+            res = self.__cur.fetchone()
+            if res['count'] <= 0:
+                print("Пост есть  уже существует")
+                return False
+            self.__cur.execute(f"delete from posts  where id ={id}")
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("Ошибка Удаления поста из БД " + str(e))
+            return False
+
+
     def getPostsAnonce(self):
         try:
-            self.__cur.execute(f"SELECT id, title, text,url FROM posts Order by time asc")
+            author = current_user.getName()
+            self.__cur.execute(f"SELECT id, title, text,url FROM posts where author='{author}' Order by time asc")
             res = self.__cur.fetchall()
             if res:
                 return res
@@ -155,3 +168,12 @@ class FDataBase:
             print("Ошибка обновления аватара в БД: " + str(e))
             return False
         return True
+
+
+    def DeleteUser(self, author):
+        try:
+            self.__cur.execute(f"delete from users  where author ={author}")
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("Ошибка Удаления поста из БД " + str(e))
+            return False

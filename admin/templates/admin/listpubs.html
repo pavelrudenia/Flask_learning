@@ -6,8 +6,12 @@
 <ul class="list-posts">
 {% for p in list %}
 <li>
-<p class="title"><a href="{{ url_for('ShowPost', alias=p.url)}}">{{p.title}}</a></p>
+<!--<p class="title"><a href="{{ url_for('ShowPost', alias=p.url)}}">{{p.title}}</a></p>-->
+<p class="title">{{p.title}}</p>
+<p class="title">{{p.author}}</p>
+<p class="title">{{p.time[:19]}}</p>
 <p class="annonce">{{ p.text[:50] | striptags  }}</p>
+
 </li>
 {% endfor %}
 </ul>
