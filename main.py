@@ -7,7 +7,7 @@ from flask_login import LoginManager, login_user, login_required, current_user, 
 from UserLogin import UserLogin
 from forms import LoginForm, RegisterForm
 from admin.admin import admin
-
+#
 # конфигурация бд
 DATABASE = '/tmp/flsite.db'
 DEBUG = True
