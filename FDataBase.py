@@ -3,6 +3,7 @@ import math
 import time
 import sqlite3
 import re
+import psycopg2.extras
 from flask_login import current_user
 
 from flask import url_for
@@ -11,7 +12,8 @@ from flask import url_for
 class FDataBase:
     def __init__(self, db):
         self.__db = db
-        self.__cur = db.cursor()
+        #self.__cur = db.cursor()
+        self.__cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     def getMenu(self):
         sql = """Select * from mainmenu"""
@@ -37,15 +39,15 @@ class FDataBase:
 
     def addCategory(self, category):
         try:
-            self.__cur.execute(f"SELECT COUNT() AS 'count' from Category where category LIKE'{category}'")
+            self.__cur.execute(f"SELECT COUNT(*) AS \"'count'\" from Category where category LIKE'{category}'")
             res = self.__cur.fetchone()
-            if res['count'] > 0:
+            if res["'count'"] > 0:
                 print("Такая категория  уже существует")
                 return False
-            print("aaa")
-            self.__cur.execute("INSERT INTO Category VALUES(?)", (category,))
+
+            self.__cur.execute(f"INSERT INTO Category VALUES('{category}')")
             self.__db.commit()
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка добавления категории в БД " + str(e))
             return False
 
@@ -54,9 +56,10 @@ class FDataBase:
 
     def addPost(self, title, text,url,category,author):
         try:
-            self.__cur.execute(f"SELECT COUNT() AS 'count' from posts where url LIKE'{url}'")
+
+            self.__cur.execute(f"SELECT COUNT(*) AS \"'count'\" from posts where url LIKE'{url}'")
             res = self.__cur.fetchone()
-            if res['count'] > 0:
+            if res["'count'"] > 0:
                 print("Cтатья с таким url уже существует")
                 return False
             base = url_for("static", filename='images')
@@ -65,9 +68,9 @@ class FDataBase:
                           text)
 
             tm = datetime.datetime.now()
-            self.__cur.execute("INSERT INTO posts VALUES(NULL, ?, ?, ?,?,?,?)", (title, category, text,url,tm,author))
+            self.__cur.execute(f"INSERT INTO posts(title, category, text,url,time,author) VALUES('{title}','{category}','{text}','{url}','{tm}','{author}')")
             self.__db.commit()
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка добавления статьи в БД " + str(e))
             return False
 
@@ -75,25 +78,27 @@ class FDataBase:
 
     def getPost(self, alias):
         try:
+            print(alias)
             self.__cur.execute(f"SELECT title,text,time,id FROM posts WHERE url Like '{alias}' LIMIT 1")
             res = self.__cur.fetchone()
+            print(res)
             if res:
                 return res
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка получения статьи из БД " + str(e))
         return (False, False)
 
 
     def DeletePost(self, id):
         try:
-            self.__cur.execute(f"SELECT id AS 'count' from posts where id ='{id}'")
+            self.__cur.execute(f"SELECT id AS \"'count'\" from posts where id ='{id}'")
             res = self.__cur.fetchone()
-            if res['count'] <= 0:
+            if res["'count'"] <= 0:
                 print("Пост есть  уже существует")
                 return False
             self.__cur.execute(f"delete from posts  where id ={id}")
             self.__db.commit()
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка Удаления поста из БД " + str(e))
             return False
 
@@ -105,23 +110,25 @@ class FDataBase:
             res = self.__cur.fetchall()
             if res:
                 return res
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка получения статьи из БД " + str(e))
         return []
 
     def addUser(self, name, email, hpsw):
         try:
-            self.__cur.execute(f"SELECT COUNT() as `count` FROM users WHERE name LIKE '{name}'")
+            self.__cur.execute(f"SELECT COUNT(*) as \"'count'\" FROM users WHERE name LIKE '{name}'")
             res = self.__cur.fetchone()
-            if res['count'] > 0:
+            print(res)
+            if res["'count'"] > 0:
                 print("Пользователь с таким  именем уже существует")
                 return False
 
             tm = datetime.datetime.now()
             #NULL в конце avatar
-            self.__cur.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, ?,NULL)", (name, email, hpsw, tm))
+           # self.__cur.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, ?,NULL)", (name, email, hpsw, tm))
+            self.__cur.execute(f"INSERT INTO users(name,email,psw,time,avatar) VALUES( '{name}', '{email}', '{hpsw}','{tm}',NULL)")
             self.__db.commit()
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка добавления пользователя в БД " + str(e))
             return False
 
@@ -129,14 +136,14 @@ class FDataBase:
 
     def getUser(self, user_id):
         try:
-            self.__cur.execute(f"SELECT * FROM users WHERE id = {user_id} LIMIT 1")
+            self.__cur.execute(f"SELECT * FROM users WHERE id = '{user_id}' LIMIT 1")
             res = self.__cur.fetchone()
             if not res:
                 print("Пользователь не найден")
                 return False
 
             return res
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка получения данных из БД " + str(e))
 
         return False
@@ -151,7 +158,7 @@ class FDataBase:
                 return False
 
             return res
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка получения данных из БД " + str(e))
 
         return False
@@ -162,9 +169,9 @@ class FDataBase:
 
         try:
             binary = sqlite3.Binary(avatar)
-            self.__cur.execute(f"UPDATE users SET avatar = ? WHERE id = ?", (binary, user_id))
+            self.__cur.execute(f"UPDATE users SET avatar = '{binary}' WHERE id = {user_id}")
             self.__db.commit()
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка обновления аватара в БД: " + str(e))
             return False
         return True
@@ -174,6 +181,6 @@ class FDataBase:
         try:
             self.__cur.execute(f"delete from users  where author ={author}")
             self.__db.commit()
-        except sqlite3.Error as e:
+        except Exception as e:
             print("Ошибка Удаления поста из БД " + str(e))
             return False

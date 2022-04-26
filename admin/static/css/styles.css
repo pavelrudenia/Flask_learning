@@ -41,7 +41,7 @@ div.login {
 	height: 200px;
 	padding: 20px;
 	color: #c39000;
-	background: #fafdd1;
+	background: #98ff98;
 	border: 2px solid #d5d8b2;
 	-webkit-border-radius: 20px;
 	-moz-border-radius: 20px;
@@ -94,7 +94,7 @@ div.login .title {
 
 ul.mainmenu {
 	list-style: none;
-	background: #fafdd1;
+	background: #66d9ff;
 	height: 40px;
 	margin: 0;
 	padding: 0;
@@ -120,7 +120,7 @@ ul.list-posts {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-	max-width: 600px;
+	max-width: 1500px;
 }
 ul.list-posts li {
 	margin: 20px 0 0 0;

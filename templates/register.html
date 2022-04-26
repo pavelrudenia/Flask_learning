@@ -7,6 +7,83 @@
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+
+* {
+    margin:0;
+
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+
+/* ======================== */
+.face {
+	margin-left:6%;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: #d8c557;
+    box-shadow: inset -3px 0 0 4px rgba(255, 102, 0, 0.15);
+    position: relative;
+}
+
+.eye {
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 32px;
+    left: 12px;
+}
+
+.eye:last-child {
+    left: auto;
+    right: 24px;
+}
+
+.eye::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background-color: #000;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: rolleyes 2s ease-in-out infinite;
+}
+
+.mouth {
+    width: 40px;
+    height: 10px;
+    background-color: #884d0e;
+    border-radius: 10px;
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@keyframes rolleyes {
+    10% {
+        transform: translate(-28px, -50%);
+    }
+
+    15% {
+        transform: translate(-28px, -20px);
+    }
+
+    20%,
+    100% {
+        transform: translate(-50%, -30px);
+    }
+}
+</style>
 <h1>Регистрация&#128286;</h1>
 <form action="/register" method="post" class="form-contact">
      {{form.hidden_tag()}}
@@ -28,4 +105,13 @@
 <p>{{ form.submit() }}
 
 </form>
+<div class="emoji">
+    <div class="face">
+      <div class="eyes">
+        <div class="eye"></div>
+        <div class="eye"></div>
+      </div>
+      <div class="mouth"></div>
+    </div>
+  </div>
 {% endblock %}

@@ -2,17 +2,19 @@
 
 {% block content %}
 {{ super() }}
-<h1>{{title}}</h1>
+<h1 align="center">{{title}}</h1>
+<div class="container">
 <ul class="list-posts">
 {% for p in list %}
 <li>
 <!--<p class="title"><a href="{{ url_for('ShowPost', alias=p.url)}}">{{p.title}}</a></p>-->
-<p class="title">{{p.title}}</p>
-<p class="title">{{p.author}}</p>
-<p class="title">{{p.time[:19]}}</p>
+<h2 class="title">{{p.title}}</h2>
+<h4 class="title" align="right">{{p.author}}</h4>
+<p class="title" align="right">{{p.time[:19]}}</p>
 <p class="annonce">{{ p.text[:50] | striptags  }}</p>
 
 </li>
 {% endfor %}
 </ul>
+</div>
 {% endblock %}

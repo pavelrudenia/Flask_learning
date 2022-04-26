@@ -7,13 +7,13 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     {% block title%}
-    <title>&#10060;Страница не найдена&#10060; </title>
+    <title>&#10060;Заметка удалена&#10060; </title>
     {% endblock %}
 </head>
 <body>
     {% block body %}
     {{ super() }}
-    <p> Заметка успешно удалена&#10060;вернуть на<a href="{{ url_for('index')}}">главную</a> страницу </p>
+    <p> Заметка успешно удалена&#10060;вернуть на <a href="{{ url_for('index')}}">главную</a> страницу </p>
     {%endblock%}
 </body>
 </html>

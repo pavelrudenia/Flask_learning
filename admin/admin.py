@@ -2,13 +2,14 @@ import sqlite3
 
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, g
 from flask_login import login_required
+import psycopg2.extras
 from FDataBase import FDataBase
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
 
 menu = [{'url': '.index', 'title': 'Панель'},
         {'url': '.listusers', 'title': 'Список пользователей'},
-        {'url': '.listpubs', 'title': 'Список статей'},
+        {'url': '.listpubs', 'title': 'Список заметок'},
         {'url': '.logout', 'title': 'Выйти'}]
 
 db = None
@@ -82,14 +83,14 @@ def listpubs():
     list = []
     if db:
         try:
-            cur = db.cursor()
+            cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cur.execute(f"SELECT title, text,author,time, url FROM posts")
             list = cur.fetchall()
             print(list)
         except sqlite3.Error as e:
             print("Ошибка получения статей из БД " + str(e))
 
-    return render_template('admin/listpubs.html', title='Список статей', menu=menu, list=list, )
+    return render_template('admin/listpubs.html', title='Список заметок', menu=menu, list=list, )
 
 
 @login_required
@@ -101,10 +102,13 @@ def listusers():
     list = []
     if db:
         try:
-            cur = db.cursor()
+
+            cur =db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cur.execute(f"SELECT name, email FROM users ORDER BY time DESC")
             list = cur.fetchall()
-        except sqlite3.Error as e:
+            print(list)
+
+        except Exception as e:
             print("Ошибка получения статей из БД " + str(e))
 
     return render_template('admin/listusers.html', title='Список пользователей', menu=menu, list=list)
@@ -114,7 +118,7 @@ def listusers():
 def DeleteUser(author):
     if db:
         try:
-            cur = db.cursor()
+            cur =db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             author_a  =author.replace("<","")
             author_b = author_a.replace(">", "")
             print(author_b)

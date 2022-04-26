@@ -7,7 +7,10 @@ from flask_login import LoginManager, login_user, login_required, current_user, 
 from UserLogin import UserLogin
 from forms import LoginForm, RegisterForm
 from admin.admin import admin
-#
+# postgresql
+import psycopg2
+import psycopg2.extras
+from config import host,db_name,user,password
 # конфигурация бд
 DATABASE = '/tmp/flsite.db'
 DEBUG = True
@@ -45,10 +48,13 @@ def load_user(user_id):
 
 
 def connect_db():
-    conn = sqlite3.connect(app.config['DATABASE'])
+    connection = psycopg2.connect(host=host, user=user, password=password, database=db_name)
+    connection.autocommit = True
+
+    return connection
     # представление данных в видн словаря,а не кортежа
-    conn.row_factory = sqlite3.Row
-    return conn
+    # conn.row_factory = sqlite3.Row
+    # return conn
 
 
 def create_db():
@@ -114,7 +120,7 @@ def login():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        hash = generate_password_hash(form.psw.data)
+        hash = generate_password_hash(form.psw.data, method="aes-256")
         res = dbase.addUser(form.name.data, form.email.data, hash)
         if res:
             flash("Вы успешно зарегистрированы", "success")
@@ -183,7 +189,6 @@ def useravatar():
     img = current_user.getAvatar(app)
     if not img:
         return ""
-
     h = make_response(img)
     h.headers['Content-Type'] = 'image/png'
     return h
@@ -212,10 +217,10 @@ def upload():
 @app.route("/post/<alias>")
 @login_required
 def ShowPost(alias):
-    title, post, time, id = dbase.getPost(alias)
-    if not post:
+    res = dbase.getPost(alias)
+    if not res["title"]:
         abort(404)
-    return render_template('post.html', menu=menu, title=title, post=post, time=time, id=id)
+    return render_template('post.html', menu=menu, title=res["title"], post=res["text"], time=res["time"], id=res["id"])
 
 
 @app.route("/post/<id>/delete")
