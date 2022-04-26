@@ -1,1 +1,5 @@
-flask==1.0.2
+bs4
+lxml
+requests
+flask
+gunicorn
